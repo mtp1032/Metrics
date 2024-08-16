@@ -67,7 +67,6 @@ function target:removeGUID( targetGUID )
 		if targetGUID == guid then
 			removedGUID = table.remove( tableTargetGUIDs, i )
 			assert( removedGUID == targetGUID, "ASSERT FAILED: Unequal GUIDS in target:removeGUIDs().")
-			print( utils:dbgPrefix(), "Removed targetGUID. tableActiveGUIDs: ", #tableTargetGUIDs )
 			break	
 		end
 	end
