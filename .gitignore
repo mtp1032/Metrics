@@ -1,32 +1,13 @@
-# Prerequisites
-*.d
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# Example .gitignore adjustments
+!.gitignore
+# Ignore everything
+*
+# But not these files...
+!README.md
+!LICENSE
+!Metrics.toc
 
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+# Allow the Testing directory and the clone_repo.py script
+!Testing/
+!Testing/clone_repo.py
