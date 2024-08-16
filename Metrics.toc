@@ -1,0 +1,31 @@
+## Interface: 11502, 11503, 20504, 30403, 40400, 100207, 110000, 110002
+##----------------------------------------------
+## Title: Metrics
+## Notes: Accurate DPS Metrics for target dummies and live play
+## Version: 0.5.0
+## X-MAJOR: 0
+## X-MINOR: 5
+## X-PATCH: 0
+## X-Expansion: Classic, Cataclysm, Retail
+## SavedVariablesPerCharacter:
+## SavedVariablesPerCharacter: DPS_METRICS_HEALTHBAR_VARS, MetricsDB
+## IconTexture: 1408997
+## Version: V0.10 
+## 30 July, 2024
+## Dependencies: WoWThreads
+## X-github: https://github.com/mtp1032/Metrics
+
+##---------------------------------------------
+##              AddOn Code
+##---------------------------------------------
+
+MetricsCore.lua
+MetricsLocales.lua
+MetricsCombatNotify.lua
+MetricsTargetDummy.lua
+MetricsDisplay.lua
+MetricsEvent.lua
+MetricsMain.lua
+MetricsOptionsPanel.lua
+MetricsIcon.lua
+MetricsCommandLine.lua
