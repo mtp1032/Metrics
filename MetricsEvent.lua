@@ -486,7 +486,8 @@ eventFrame:RegisterEvent( "PLAYER_REGEN_DISABLED" )
 eventFrame:SetScript("OnEvent",
 function( self, event, ... )
 	local arg1, arg2, arg3, arg4 = ...
-	if event == "ADDON_LOADED" and args == ADDON_NAME then
+
+	if event == "ADDON_LOADED" and arg1 == ADDON_NAME then
 		DEFAULT_CHAT_FRAME:AddMessage( L["ADDON_LOADED_MSG"], 1.0, 1.0, 0)
 		
 		eventFrame:UnregisterEvent("ADDON_LOADED")  
