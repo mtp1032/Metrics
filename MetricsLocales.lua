@@ -37,7 +37,7 @@ local LOCALE = GetLocale()
 if LOCALE == "enUS" then
     L["VERSION"] = core:getVersion()
     L["EXPANSION_NAME"] = core:getExpansionName()
-    L["ADDON_LOADED_MESSAGE"] = string.format("%s %s (%s) loaded ", ADDON_NAME, core:getVersion(), core:getExpansionName())
+    L["ADDON_LOADED_MSG"] = string.format("%s %s (%s) loaded ", ADDON_NAME, core:getVersion(), core:getExpansionName())
     L["INPUT_PARM_NIL"] = "ERROR: Input parameter nil. "
     L["INVALID_TYPE"] = "ERROR: Input datatype invalid. "
     L["ILLEGAL_OPERATION"]  = "ERROR: Operation is not supported. "

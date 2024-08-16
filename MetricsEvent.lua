@@ -480,11 +480,19 @@ function event:enableCombat()
 end
 
 local eventFrame = CreateFrame("Frame" )
+eventFrame:RegisterEvent( "ADDON_LOADED")
 eventFrame:RegisterEvent( "COMBAT_LOG_EVENT_UNFILTERED")
 eventFrame:RegisterEvent( "PLAYER_REGEN_DISABLED" )
 eventFrame:SetScript("OnEvent",
 function( self, event, ... )
 	local arg1, arg2, arg3, arg4 = ...
+	if event == "ADDON_LOADED" and args == ADDON_NAME then
+		DEFAULT_CHAT_FRAME:AddMessage( L["ADDON_LOADED_MSG"], 1.0, 1.0, 0)
+		
+		eventFrame:UnregisterEvent("ADDON_LOADED")  
+		return
+	end
+
 
 	if event == "PLAYER_REGEN_DISABLED" then
 		if COMBAT_ENABLED == true then return end

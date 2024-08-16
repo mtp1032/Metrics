@@ -58,10 +58,6 @@ end
 function core:getVersion()
     return C_AddOns.GetAddOnMetadata( ADDON_NAME, "Version")
 end
-function core:getClockInterval()
-    return 1000 / GetFramerate()
-end
-
 
 local fileName = "MetricsCore.lua"
 if core:debuggingIsEnabled() then

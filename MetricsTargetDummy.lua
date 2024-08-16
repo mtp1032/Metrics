@@ -56,7 +56,6 @@ function target:insertTargetGUID( targetGUID )
 	-- Then it's a new target. Insert its targetGUID into the table
 	-- and return true
 	table.insert( tableTargetGUIDs, targetGUID )
-	print( utils:dbgPrefix(), "Inserted targetGUID. tableActiveGUIDs: ", #tableTargetGUIDs )
 	return #tableTargetGUIDs
 end
 function target:removeGUID( targetGUID )
