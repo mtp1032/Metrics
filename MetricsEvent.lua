@@ -488,7 +488,7 @@ function( self, event, ... )
 	local arg1, arg2, arg3, arg4 = ...
 
 	if event == "ADDON_LOADED" and arg1 == ADDON_NAME then
-		DEFAULT_CHAT_FRAME:AddMessage( L["ADDON_LOADED_MSG"], 1.0, 1.0, 0)
+		DEFAULT_CHAT_FRAME:AddMessage( L["ADDON_LOADED_MESSAGE"], 1.0, 1.0, 0)
 		
 		eventFrame:UnregisterEvent("ADDON_LOADED")  
 		return
@@ -532,7 +532,6 @@ function( self, event, ... )
 				notify:combatStatusAlert("Leaving Combat", 5, 0 )
 				PlaySound( SOUNDKIT.READY_CHECK )
 				reportEncounter( encounterId )
-				utils:dbgPrint()
 				wipe( encounterSubEvents )
 				encounterId = encounterId + 1
 				return
