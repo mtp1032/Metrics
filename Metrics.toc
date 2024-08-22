@@ -2,13 +2,13 @@
 ##----------------------------------------------
 ## Title: Metrics
 ## Notes: Accurate DPS Metrics for target dummies and live play
-## Version: 0.5.1
+## Version: 0.9.7
 ## X-MAJOR: 0
-## X-MINOR: 5
-## X-PATCH: 1
+## X-MINOR: 9
+## X-PATCH: 7
 ## X-Expansion: Classic, Cataclysm, Retail
 ## SavedVariablesPerCharacter:
-## SavedVariablesPerCharacter: DPS_METRICS_HEALTHBAR_VARS, MetricsDB
+## SavedVariablesPerCharacter: METRICS_HEALTHBAR_SAVED_VARS, METRICS_CHECKBOX_SAVED_VARS,MetricsDB
 ## IconTexture: 1408997
 ## Version: V0.10 
 ## 30 July, 2024
