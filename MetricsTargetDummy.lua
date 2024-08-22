@@ -28,9 +28,9 @@ local RELATIVE_TO 		= "BOTTOM"
 local OFFSET_X 			= 39.398860931396
 local OFFSET_Y			= 184.8804473877
 
-local tableActiveHealthBars = {}
+local tableOfActiveHealthBars = {}
 local healthBarPool = {}
-local tableTargetGUIDs = {}
+local tableOfTargetGUIDs = {}
 target.defaultTargetHealth = nil
 -- Indices of CLEU subEvents require in this module
 local CLEU_SUBEVENT		= 2
@@ -44,35 +44,35 @@ function target:insertTargetGUID( targetGUID )
 
 	local subStr = strsub( targetGUID, 1, 6 )
 	if subStr == "Player" then 
-		return #tableTargetGUIDs 
+		return #tableOfTargetGUIDs 
 	end
 	-- do nothing if the guid is already in the table
-	for _, guid in ipairs( tableTargetGUIDs) do
+	for _, guid in ipairs( tableOfTargetGUIDs) do
 		if targetGUID == guid then
-			return #tableTargetGUIDs
+			return #tableOfTargetGUIDs
 		end
 	end
 	
 	-- Then it's a new target. Insert its targetGUID into the table
 	-- and return true
-	table.insert( tableTargetGUIDs, targetGUID )
-	return #tableTargetGUIDs
+	table.insert( tableOfTargetGUIDs, targetGUID )
+	return #tableOfTargetGUIDs
 end
 function target:removeGUID( targetGUID )
-	if #tableTargetGUIDs == 0 then return 0 end
+	if #tableOfTargetGUIDs == 0 then return 0 end
 
 	local removedGUID = nil
-	for i, guid in ipairs( tableTargetGUIDs) do
+	for i, guid in ipairs( tableOfTargetGUIDs) do
 		if targetGUID == guid then
-			removedGUID = table.remove( tableTargetGUIDs, i )
+			removedGUID = table.remove( tableOfTargetGUIDs, i )
 			assert( removedGUID == targetGUID, "ASSERT FAILED: Unequal GUIDS in target:removeGUIDs().")
 			break	
 		end
 	end
-	return #tableTargetGUIDs
+	return #tableOfTargetGUIDs
 end
 function target:numberOfTargetGUIDs()
-	return #tableTargetGUIDs
+	return #tableOfTargetGUIDs
 end
 function target:isDummy( targetName )
 	local isDummy = false
@@ -88,43 +88,49 @@ function target:isDummy( targetName )
 	return isDummy
 end
 function target:removeHealthBars()
-	local num = #tableActiveHealthBars
+	local num = #tableOfActiveHealthBars
 	for i = 1, num do
-		local f = table.remove( tableActiveHealthBars, tableActiveHealthBars[i])
+		local f = table.remove( tableOfActiveHealthBars, tableOfActiveHealthBars[i])
 		target:removeGUID( f.TargetGUID )
 		table.insert( healthBarPool, f )
 	end
-	wipe( tableActiveHealthBars)
+	wipe( tableOfActiveHealthBars)
 end
--- This function is only called from the minimap options module.
+-- This function is only called from the minimap options file.
+-- If the target is not a target dummy, then an error message
+-- is displayed.
 function target:setTargetDummyHealth( targetHealth )
 
-	if UnitExists("Target") == false then
+	-- Check whether the player has a selected a target.
+	-- If not, then display an error message.
+	if UnitExists("Target") == false then 
 		UIErrorsFrame:SetTimeVisible(4)
 		local msg = string.format("[INFO] No Target Selected.")	
-		UIErrorsFrame:AddMessage( msg, 1.0, 1.0, 0.0 )
-		return
-	end
-	if not target:isDummy( f.TargetName ) then
-		UIErrorsFrame:SetTimeVisible(5)
-		local msg = string.format("[INFO] %s Must Be A Target Dummy.", f.TargetName )	
-		UIErrorsFrame:AddMessage( msg, 1.0, 1.0, 0.0 )
+		UIErrorsFrame:AddMessage( msg, 1.0, 0.0, 0.0 )
 		return
 	end
 
-	local targetGUID = UnitGUID("Target")
-
-	-- The target's health bar should already exist because if we're
-	-- here the dummy was targeted but its health had not yet been set.
+	-- check whether the selected target's guid exists.
 	local f = nil
-	for _, bar in ipairs( tableActiveHealthBars) do
+	local targetGUID = UnitGUID("Target")
+	for _, bar in ipairs( tableOfActiveHealthBars ) do
 		if bar.TargetGUID == targetGUID then
 			f = bar
 			break
 		end
 	end
-	assert(f ~= nil )
-	targetHealth = UnitHealthMax( "Target") * 2
+	assert( f ~= nil, "Target's healthbar not found." )
+
+
+	-- check that the selected target is a target dummy
+	local targetName = UnitName("Target")
+	if not target:isDummy( targetName ) then
+		UIErrorsFrame:SetTimeVisible(5)
+		local msg = string.format("[INFO] %s Must Be A Target Dummy.", f.TargetName )	
+		UIErrorsFrame:AddMessage( msg, 1.0, 0.0, 0.0 )
+		return
+	end
+
 	f.TargetMaxHealth = targetHealth
 	f.TargetHealth = targetHealth
 end
@@ -136,13 +142,13 @@ local function getHealthBarFromPool()
 	f = table.remove( healthBarPool )
 	return f
 end
+-- creates a health bar, though if one exists in the cache of removeHealthBars
+-- use that instead.
 function target:createHealthBar( targetName, targetGUID, targetHealth )
 	local f = getHealthBarFromPool()
-	if f ~= nil then return f end
-
-	-- no health bars in the cache (pool). Create a brand new health bar
-	f = CreateFrame("Frame", "StatusBarFrame", UIParent,"TooltipBackdropTemplate")
-
+	if f == nil then
+		f = CreateFrame("Frame", "StatusBarFrame", UIParent,"TooltipBackdropTemplate")
+	end
 	f.TargetMaxHealth	= targetHealth
 	f.TargetHealth		= targetHealth
 	f.TargetName 		= targetName
@@ -171,30 +177,32 @@ function target:createHealthBar( targetName, targetGUID, targetHealth )
 			SAVED_HEALTHBAR_FRAME = {a, b, c, d, e}
 		end)
 
-	f.bar = CreateFrame("StatusBar",nil,f)
-	f.bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-	f.bar:SetStatusBarColor( 0.0, 1.0, 0.0 )
-	f.bar:SetPoint("TOPLEFT",5,-5)
-	f.bar:SetPoint("BOTTOMRIGHT",-5,5)
+	f.Bar = CreateFrame("StatusBar",nil,f)
+	f.Bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
+	f.Bar:SetStatusBarColor( 0.0, 1.0, 0.0 )
+	f.Bar:SetPoint("TOPLEFT",5,-5)
+	f.Bar:SetPoint("BOTTOMRIGHT",-5,5)
 
 	-- create a font string for the text
-	f.bar.text = f.bar:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	f.bar.text:SetTextColor( 1.0, 1.0, 0.0 )	-- yellow
-	f.bar.text:SetPoint("LEFT")
+	f.Bar.text = f.Bar:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	f.Bar.text:SetTextColor( 1.0, 1.0, 0.0 )	-- yellow
+	f.Bar.text:SetPoint("LEFT")
 
 	-- copying mixins to statusbar
-	Mixin(f.bar,SmoothStatusBarMixin)
-	f.bar:SetMinMaxSmoothedValue(0, f.TargetMaxHealth )
-	f.bar:SetSmoothedValue( f.TargetMaxHealth )
+	Mixin(f.Bar,SmoothStatusBarMixin)
+	f.Bar:SetMinMaxSmoothedValue(0, f.TargetMaxHealth )
+	f.Bar:SetSmoothedValue( f.TargetMaxHealth )
 	local percent = math.floor( f.TargetHealth/f.TargetMaxHealth * 100)	
 	local s = string.format("[%s HP %d] %0.1f%%", f.TargetName, f.TargetHealth, percent )
-	f.bar.text:SetText( s )	
+	f.Bar.text:SetText( s )	
 
-	table.insert( tableActiveHealthBars, f )
+	table.insert( tableOfActiveHealthBars, f )
 	target:insertTargetGUID( f.TargetGUID)
 	f:Show()
 	return f
 end
+
+-- called from MetricsEvent.lua
 function target:updateHealthBar( subEvent )
 
 	local targetName = subEvent[CLEU_TARGETNAME]
@@ -202,13 +210,13 @@ function target:updateHealthBar( subEvent )
 
 	-- check that this is a valid health bar
 	local f = nil
-	for _, bar in ipairs( tableActiveHealthBars) do
+	for _, bar in ipairs( tableOfActiveHealthBars) do
 		if bar.TargetGUID == targetGUID then
 			f = bar
 			break
 		end
 	end
-	if f == nil then return #tableTargetGUIDs end
+	if f == nil then return #tableOfTargetGUIDs end
 
 	if subEvent[CLEU_SUBEVENT] == "SWING_DAMAGE" then
 		f.TargetHealth = f.TargetHealth - subEvent[CLEU_DAMAGE_DONE - 3]
@@ -223,21 +231,21 @@ function target:updateHealthBar( subEvent )
 
 		
 		-- move the target health bar into the pool of [used] health bars
-		for i, entry in ipairs( tableActiveHealthBars) do
+		for i, entry in ipairs( tableOfActiveHealthBars) do
 			if f.TargetGUID == entry.TargetGUID then
-				f = table.remove( tableActiveHealthBars, i )
+				f = table.remove( tableOfActiveHealthBars, i )
 				table.insert( healthBarPool, f )
 			end
 		end
 		f:Hide()
 	else 
-		f.bar:SetSmoothedValue( f.TargetHealth  )
+		f.Bar:SetSmoothedValue( f.TargetHealth  )
 		local percent = math.floor( f.TargetHealth/f.TargetMaxHealth * 100)	
 		local s = string.format("[%s HP %d] %0.1f%%", f.TargetName, f.TargetHealth, percent )
-		f.bar.text:SetText( s )	
+		f.Bar.text:SetText( s )	
 	end
 
-	return #tableTargetGUIDs
+	return #tableOfTargetGUIDs
 end
 
 --------------  	EVENT PROCESSING BELOW HERE ------------------
@@ -269,29 +277,30 @@ function( self, event, ... )
 			return
 		end
 
-		-- return if the target is NOT a dummy target
+		-- return if the target is NOT a target dummy
 		local isDummy = target:isDummy( targetName )
 		if not isDummy then 
 			return
 		end
+
 		-- return if the guid is alredy in the table
-		for _, guid in ipairs( tableTargetGUIDs ) do
+		for _, guid in ipairs( tableOfTargetGUIDs ) do
 			if targetGUID == guid then
 				return
 			end
 		end
 
 		-- did the player change to an existing target? If so, just return.
-		if #tableActiveHealthBars > 0 then
-			for _, bar in ipairs( tableActiveHealthBars) do
+		if #tableOfActiveHealthBars > 0 then
+			for _, bar in ipairs( tableOfActiveHealthBars) do
 				if bar.TargetGUID == targetGUID then
 					return
 				end
 			end
 		end
 
-		-- if we're here, this is a new target. If a target health bar exists in
-		-- the pool of health bar frames, use it. If not, create a new health bar.
+		-- if we're here, this is a new target so we create a new, or use
+		-- an existing healthbar.
 		local targetHealth = UnitHealthMax("Player") * 2
 		local f = target:createHealthBar(targetName, targetGUID, targetHealth )
 	end

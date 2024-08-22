@@ -9,6 +9,8 @@ Metrics.OptionsPanel = {}
 local core      = Metrics.MetricsCore
 local target = Metrics.MetricsTargetDummy
 local panel = Metrics.OptionsPanel
+local display = Metrics.Display
+
 local utils     = LibStub:GetLibrary("UtilsLib")
 
 local L     = Metrics.Locales.L
@@ -19,7 +21,8 @@ local EMPTY_STR = ""
 local optionsPanel = nil
 
 local defaultTargetHealth = UnitHealthMax("Player")
-DPS_TRACKER_CHECKBOX_VARS	= {}
+
+METRICS_CHECKBOX_SAVED_VARS	= {}
 
 local dmg  = 1
 local heal = 2
@@ -60,16 +63,16 @@ local function scrollingDamageCheckBtn( frame, xPos, yPos )
 	dmgScrollButton.tooltip = string.format("Damage values (red) are scrolled across your screen. Crit values will be in a larger font.")
 	dmgScrollButton.Text:SetFontObject(GameFontNormal)
 	_G[dmgScrollButton:GetName().."Text"]:SetText("Check To Scroll Damage Values." )
-	dmgScrollButton:SetChecked( DPS_TRACKER_CHECKBOX_VARS[dmg] )
+	dmgScrollButton:SetChecked( METRICS_CHECKBOX_SAVED_VARS[dmg] )
 	dmgScrollButton:SetScript("OnClick", 
 		function(self)
 			local isChecked = self:GetChecked() and true or false
 			if isChecked then 
-				options:enableScrollingDmg() 
+				display:enableScrollingDmg() 
 			else 
-				options:disableScrollingDmg() 
+				display:disableScrollingDmg() 
 			end
-			DPS_TRACKER_CHECKBOX_VARS[dmg] = isChecked
+			METRICS_CHECKBOX_SAVED_VARS[dmg] = isChecked
 		end)
 end
 local function scrollingHealsCheckBtn( frame, xPos, yPos )
@@ -78,16 +81,16 @@ local function scrollingHealsCheckBtn( frame, xPos, yPos )
 	healScrollButton.tooltip = string.format("Heal values (Green) are scrolled across your screen. Crit values will be in a larger font.")
 	healScrollButton.Text:SetFontObject(GameFontNormal)
 	_G[healScrollButton:GetName().."Text"]:SetText("Check To Scroll Heal Values." )
-	healScrollButton:SetChecked( DPS_TRACKER_CHECKBOX_VARS[heal] )
+	healScrollButton:SetChecked( METRICS_CHECKBOX_SAVED_VARS[heal] )
 	healScrollButton:SetScript("OnClick", 
 		function(self)
 			local isChecked = self:GetChecked() and true or false
 			if isChecked then 
-				options:enableScrollingHeals() 
+				display:enableScrollingHeals() 
 			else 
-				options:disableScrollingHeals() 
+				display:disableScrollingHeals() 
 			end
-			DPS_TRACKER_CHECKBOX_VARS[heal] = isChecked
+			METRICS_CHECKBOX_SAVED_VARS[heal] = isChecked
 		end)
 end
 local function scrollingAurasCheckBtn( frame, xPos, yPos )
@@ -96,17 +99,17 @@ local function scrollingAurasCheckBtn( frame, xPos, yPos )
 	auraScrollButton.tooltip = string.format("Auras (Buffs and Debuffs) are scrolled across your screen. WARNING: Checking this box can cause your screen to be cluttered.")
 	auraScrollButton.Text:SetFontObject(GameFontNormal)
 	_G[auraScrollButton:GetName().."Text"]:SetText("Check To Scroll Auras." )
-	auraScrollButton:SetChecked( DPS_TRACKER_CHECKBOX_VARS[aura])
+	auraScrollButton:SetChecked( METRICS_CHECKBOX_SAVED_VARS[aura])
 	auraScrollButton:SetScript("OnClick", 
 		function(self)
 			local isChecked = self:GetChecked() and true or false
 
 			if isChecked then
-				options:enableScrollingAuras() 
+				display:enableScrollingAuras() 
 			else 
-				options:disableScrollingAuras() 
+				display:disableScrollingAuras() 
 			end
-			DPS_TRACKER_CHECKBOX_VARS[aura] = isChecked
+			METRICS_CHECKBOX_SAVED_VARS[aura] = isChecked
 		end)
 end
 local function scrollingMissCheckBtn( frame, xPos, yPos )
@@ -115,16 +118,16 @@ local function scrollingMissCheckBtn( frame, xPos, yPos )
 	missScrollButton.tooltip = string.format("Miss types (e.g., RESISTS, BLOCKS, PARRIES, DODGES, etc.,) are scrolled across your screen.")
 	missScrollButton.Text:SetFontObject(GameFontNormal)
 	_G[missScrollButton:GetName().."Text"]:SetText("Check To Scroll Miss Types." )
-	missScrollButton:SetChecked( DPS_TRACKER_CHECKBOX_VARS[miss] )
+	missScrollButton:SetChecked( METRICS_CHECKBOX_SAVED_VARS[miss] )
 	missScrollButton:SetScript("OnClick", 
 		function(self)
 			local isChecked = self:GetChecked() and true or false
 			if isChecked then
-				options:enableScrollingMisses() 
+				display:enableScrollingMisses() 
 			else 
-				options:disableScrollingMisses() 
+				display:disableScrollingMisses() 
 			end
-			DPS_TRACKER_CHECKBOX_VARS[miss] = isChecked
+			METRICS_CHECKBOX_SAVED_VARS[miss] = isChecked
 		end)
 end
 
@@ -143,7 +146,7 @@ local function createDefaultsButton(f, width, height) -- creates Default button
  			healScrollButton:SetChecked( false )
 			auraScrollButton:SetChecked( false)
 			missScrollButton:SetChecked( false )
-			DPS_TRACKER_CHECKBOX_VARS = {false, false, false, false }
+			METRICS_CHECKBOX_SAVED_VARS = {false, false, false, false }
 			f:Hide()
 		end)
 end
@@ -157,11 +160,12 @@ local function createAcceptButton(f, width, height) -- creates Accept button
 
 	f.hide:SetScript("OnClick",
 		function( self )
-			DPS_TRACKER_CHECKBOX_VARS[dmg]  = dmgScrollButton:GetChecked()
-			print( DPS_TRACKER_CHECKBOX_VARS[dmg])
-			DPS_TRACKER_CHECKBOX_VARS[heal] = healScrollButton:GetChecked()
-			DPS_TRACKER_CHECKBOX_VARS[aura] = auraScrollButton:GetChecked()
-			DPS_TRACKER_CHECKBOX_VARS[miss] = missScrollButton:GetChecked()
+			METRICS_CHECKBOX_SAVED_VARS[dmg]  = dmgScrollButton:GetChecked()
+			print( METRICS_CHECKBOX_SAVED_VARS[dmg])
+			METRICS_CHECKBOX_SAVED_VARS[heal] = healScrollButton:GetChecked()
+			METRICS_CHECKBOX_SAVED_VARS[aura] = auraScrollButton:GetChecked()
+			METRICS_CHECKBOX_SAVED_VARS[miss] = missScrollButton:GetChecked()
+		
 			f:Hide()
 		end)
 end
@@ -177,13 +181,17 @@ local function createInputDialogBox(frame, title, xPos, yPos) -- creates the inp
 	f:SetSize(200,75)
 	f:SetAutoFocus(false)
 	f:SetPoint("LEFT", xPos, yPos)
-	f:SetText( defaultTargetHealth )
 	f:SetScript("OnEnterPressed", 
 		function(self,button)
 			local targetHealth = f:GetText()
-			if targetHealth == EMPTY_STR then targetHealth = defaultTargetHealth end
-			targetHealth = tonumber( targetHealth )
-			target:setTargetDummyHealth( targetHealth )
+			if targetHealth == EMPTY_STR then 
+				targetHealth = defaultTargetHealth 
+			else
+				targetHealth = tonumber( targetHealth )
+			end
+			
+			target:setTargetDummyHealth( targetHealth)
+			-- this clears the edit box
 			ClearCursor()
 			f:SetText("")
 			optionsPanel:Hide()
@@ -232,7 +240,7 @@ local function createOptionsPanel()
 	tinsert( UISpecialFrames, frame:GetName() ) 
     frame:SetSize( FRAME_WIDTH, FRAME_HEIGHT )
 	local buttonWidth = 80
-	local buttonHeight	= 20
+	local buttonHeight	= 20 
 	createAcceptButton(frame, buttonWidth, buttonHeight)
 	createDefaultsButton(frame, buttonWidth, buttonHeight)
 
@@ -316,48 +324,50 @@ eventFrame:RegisterEvent( "PLAYER_LOGIN")
 eventFrame:SetScript("OnEvent",
 function( self, event, ... )
 	if event == "PLAYER_LOGIN" then
-		if DPS_TRACKER_CHECKBOX_VARS == nil then
-			DPS_TRACKER_CHECKBOX_VARS = {false, false, false,false }
-			options:disableScrollingDmg()
-			options:disableScrollingHeals()
-			options:disableScrollingAuras()
-			options:disableScrollingMisses()
+		-- set the default scrolling values. Players must deliberately
+		-- enable scrolling (true means scolling is disabled)
+		if METRICS_CHECKBOX_SAVED_VARS == nil then
+			METRICS_CHECKBOX_SAVED_VARS = {true, true, true, true }
+			display:disableScrollingDmg()
+			display:disableScrollingHeals()
+			display:disableScrollingAuras()
+			display:disableScrollingMisses()
 		end
 		
-		if DPS_TRACKER_CHECKBOX_VARS[dmg] then
-			local checked = DPS_TRACKER_CHECKBOX_VARS[dmg]
+		if METRICS_CHECKBOX_SAVED_VARS[dmg] then
+			local checked = METRICS_CHECKBOX_SAVED_VARS[dmg]
 			dmgScrollButton:SetChecked( checked )
 			if checked then
-				options:enableScrollingDmg()
+				display:enableScrollingDmg()
 			else
-				options:disableScrollingDmg()
+				display:disableScrollingDmg()
 			end
 		end
-		if DPS_TRACKER_CHECKBOX_VARS[heal] then
-			local checked = DPS_TRACKER_CHECKBOX_VARS[heal]
+		if METRICS_CHECKBOX_SAVED_VARS[heal] then
+			local checked = METRICS_CHECKBOX_SAVED_VARS[heal]
 			healScrollButton:SetChecked( checked )
 			if checked then
-				options:enableScrollingHeals()
+				display:enableScrollingHeals()
 			else
-				options:disableScrollingHeals()
+				display:disableScrollingHeals()
 			end
 		end
-		if DPS_TRACKER_CHECKBOX_VARS[aura] then
-			local checked = DPS_TRACKER_CHECKBOX_VARS[aura]
+		if METRICS_CHECKBOX_SAVED_VARS[aura] then
+			local checked = METRICS_CHECKBOX_SAVED_VARS[aura]
 			auraScrollButton:SetChecked( checked )
 			if checked then
-				options:enableScrollingAuras()
+				display:enableScrollingAuras()
 			else
-				options:disableScrollingAuras()
+				display:disableScrollingAuras()
 			end
 		end
-		if DPS_TRACKER_CHECKBOX_VARS[miss] then
-			local checked = DPS_TRACKER_CHECKBOX_VARS[miss]
+		if METRICS_CHECKBOX_SAVED_VARS[miss] then
+			local checked = METRICS_CHECKBOX_SAVED_VARS[miss]
 			missScrollButton:SetChecked( checked )
 			if checked then
-				options:enableScrollingMisses()
+				display:enableScrollingMisses()
 			else
-				options:disableScrollingMisses()
+				display:disableScrollingMisses()
 			end
 		end
 	end
