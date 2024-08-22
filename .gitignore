@@ -6,7 +6,9 @@
 # But not these files...
 !README.md
 !LICENSE
+!VERSION.md
 !Metrics.toc
+!Metrics*.lua
 
 # Allow the Testing directory and the clone_repo.py script
 !Testing/
