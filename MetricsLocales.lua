@@ -13,10 +13,19 @@ local ADDON_NAME, Metrics = ...
 Metrics = Metrics or {}
 Metrics.Locales = {}
 local core = Metrics.MetricsCore
-
 ------------------------------------------------------------
 ---                   code begins here                    --
 ------------------------------------------------------------
+
+-- Form a string representing the library's version number (see WoWThreads.lua).
+local MAJOR = C_AddOns.GetAddOnMetadata(ADDON_NAME, "X-MAJOR")
+local MINOR = C_AddOns.GetAddOnMetadata(ADDON_NAME, "X-MINOR")
+local PATCH = C_AddOns.GetAddOnMetadata(ADDON_NAME, "X-PATCH")
+
+local version = string.format("%s.%s.%s", MAJOR, MINOR, PATCH )
+
+local expansionName = core:getExpansionName()
+
 local L = setmetatable({}, { __index = function(t, k) 
     local v = tostring(k)
     rawset(t, k, v)
@@ -24,14 +33,13 @@ local L = setmetatable({}, { __index = function(t, k)
 end })
 
 Metrics.Locales.L = L
-local expansionName = core:getExpansionName()
-local version       = core:getVersion()
 
 local LOCALE = GetLocale()
 if LOCALE == "enUS" then
     L["VERSION"]            = version
     L["EXPANSION_NAME"]     = expansionName
-    L["ADDON_LOADED_MESSAGE"]   = string.format("%s %s (%s) loaded ", ADDON_NAME, version, expansionName)
+    L["ADDON_AND_VERSION"]  = string.format("%s %s (%s). ", ADDON_NAME, version, expansionName)
+    L["ADDON_LOADED_MESSAGE"]   = L["ADDON_AND_VERSION"] .. " loaded."
     L["INPUT_PARM_NIL"]     = "ERROR: Input parameter nil. "
     L["INVALID_TYPE"]       = "ERROR: Input datatype invalid. "
     L["ILLEGAL_OPERATION"]  = "ERROR: Operation is not supported. "
