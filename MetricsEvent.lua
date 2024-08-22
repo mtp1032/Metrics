@@ -216,12 +216,16 @@ local function createDmgRecord( subEvent ) -- create a single damage record from
 		offset = 3
 	end
 	
+	local dmgAmount	= subEvent[ CLEU_DMG_AMOUNT - offset]
+	if dmgAmount == 0 then
+		return nil
+	end
+
 	local isCritical	= subEvent[ CLEU_DMG_IS_CRIT 	- offset]
 	local overkill 		= subEvent[ CLEU_DMG_OVERKILL - offset]
 	local resisted 		= subEvent[ CLEU_DMG_RESISTED - offset]
 	local blocked 		= subEvent[ CLEU_DMG_BLOCKED 	- offset]
 	local absorbed 		= subEvent[ CLEU_DMG_ABSORBED	- offset]
-	local dmgAmount		= subEvent[ CLEU_DMG_AMOUNT 	- offset]
 
 	if overkill == nil then
 		overkill = 0
@@ -384,14 +388,15 @@ end
 local function reportEncounter( index )
 
 	if encounterSubEvents[index] == nil then
-		local encounterRecord = string.format("Encounter[%d] Target was killed with 1 shot. No damage could be collected.\n", index )
-		utils:postMsg( encounterRecord )
+		-- local encounterRecord = string.format("Encounter[%d] Target was killed with 1 shot. No damage could be collected.\n", index )
+		-- utils:postMsg( encounterRecord )
 		return nil
 	end
 
 	local dmgRecord = nil
 	local healRecord = nil
 	local totalDamage = 0
+	local totalCritDmg = 0
 	local totalHealing = 0
 
 		-- order the subEvents according to their timestamp and determine 
@@ -401,9 +406,7 @@ local function reportEncounter( index )
 	-- collect all the subEvents from this encounter (by index) into a single table,
 	-- subEvents
 	local subEvents = encounterSubEvents[index]
-
 	local num = #subEvents
-	
 	local elapsedTime = subEvents[num][1] - subEvents[1][1]
 
 	-- now, convert the subEvents to damage and healing records.
@@ -413,10 +416,12 @@ local function reportEncounter( index )
 		local enteredInTable = false
 		if isDamageSubEvent( subEvent[CLEU_SUBEVENT]) then
 			dmgRecord = createDmgRecord( subEvent )
-			for _, entry in ipairs( encounterSpellRecords ) do
-				if dmgRecord[DMG_SPELLNAME] == entry[DMG_SPELLNAME] then
-					entry = sumDmgRecords( entry, dmgRecord)
-					enteredInTable = true
+			if dmgRecord ~= nil then
+				for _, entry in ipairs( encounterSpellRecords ) do
+					if dmgRecord[DMG_SPELLNAME] == entry[DMG_SPELLNAME] then
+						entry = sumDmgRecords( entry, dmgRecord)
+						enteredInTable = true
+					end
 				end
 			end
 			if not enteredInTable then
@@ -440,16 +445,39 @@ local function reportEncounter( index )
 
 	local stringRecords = {}
 	sortSpellRecordsByDamage( encounterSpellRecords )
-	for i = 1, #encounterSpellRecords do
-		local rec = encounterSpellRecords[i]
-	end
+	
 	for i = 1, #encounterSpellRecords do
 		local spellRecord = encounterSpellRecords[i]
 		local str = nil
 		if isDamageSubEvent( spellRecord[3]) then
-			totalDamage = totalDamage + spellRecord[DMG_AMOUNT]
-			str = string.format( "   %s, Damage: %d, Casts: %d (DPC %0.2f) \n", 
-									spellRecord[1], spellRecord[4], spellRecord[6], spellRecord[4]/spellRecord[DMG_NUM_CASTS] )
+			local normalDamage 		= spellRecord[DMG_AMOUNT]
+			local critDamage 		= spellRecord[DMG_CRIT_AMOUNT]
+			local numCasts 			= spellRecord[DMG_NUM_CASTS]
+			local totalSpellDmg 	= normalDamage + critDamage
+			local DPC 				= totalSpellDmg/numCasts
+			totalDamage 			= totalDamage + totalSpellDmg
+			local critCasts			= 0
+			for j = 1, #encounterSpellRecords do
+				local rec = encounterSpellRecords[j]
+				if rec[CLEU_DMG_IS_CRIT] then
+					critCasts = critCasts + 1
+				end
+			end
+			local pcCrit			= critCasts/numCasts * 100
+
+			if critDamage > 0 then
+				local pcCrit = critDamage/totalSpellDmg * 100
+				str = string.format( "   %s - Damage: %d (%0.2f%%), Damage/cast: %0.1f) \n", 
+									spellRecord[DMG_SPELLNAME], 
+									totalSpellDmg, 
+									pcCrit,
+									totalSpellDmg/spellRecord[DMG_NUM_CASTS] )
+			else
+				str = string.format( "   %s - Damage: %d, Damage/cast: %0.1f) \n", 
+									spellRecord[DMG_SPELLNAME], 
+									totalSpellDmg, 
+									totalSpellDmg/spellRecord[DMG_NUM_CASTS] )
+			end
 		end
 		if isHealSubEvent( spellRecord[3]) then
 			totalHealing = totalHealing + spellRecord[4]
@@ -466,7 +494,6 @@ local function reportEncounter( index )
 	end
 	utils:postMsg( string.format("%s\n", encounterRecord ))
 end
-
 
 -- Function to add subEvent to an encounter
 local function addSubEventToEncounter( index, subEvent)
