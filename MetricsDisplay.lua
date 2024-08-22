@@ -65,10 +65,44 @@ GameFontNormalMed1
 	-- f.Text:SetTextColor( 0.0, 0.0, 1.0 )  -- blue
 	-- f.Text:SetTextColor( 1.0, 0.0, 0.0 )  -- red
 
-	local TICKS_PER_INTERVAL = 4
-	
-	local framePool = {}
-	
+local framePool = {}
+local FRAME_TICKS_PER_INTERVAL = 4
+local scrollingDmgDisabled = true
+local scrollingHealsDisabled = true
+
+function display:disableScrollingDmg()
+	scrollingDmgDisabled = true
+	DEFAULT_CHAT_FRAME:AddMessage("Scrolling combat damage disabled.")
+end
+function display:disableScrollingHeals()
+	scrollingHealsDisabled = true
+	DEFAULT_CHAT_FRAME:AddMessage("Scrolling combat heals disabled.")
+end
+function display:enableScrollingDmg()
+	scrollingDmgDisabled = false
+	DEFAULT_CHAT_FRAME:AddMessage("Scrolling combat damage enabled.")
+end
+function display:enableScrollingHeals()
+	scrollingHealsDisabled = false
+	DEFAULT_CHAT_FRAME:AddMessage("Scrolling combat heals enabled.")
+end
+
+function display:disableScrollingAuras()
+	DEFAULT_CHAT_FRAME:AddMessage("Not Implemented")
+end
+function display:disableScrollingMisses()
+	DEFAULT_CHAT_FRAME:AddMessage("Not Implemented")
+end
+
+function display:enableScrollingAuras()
+	DEFAULT_CHAT_FRAME:AddMessage("Not Implemented")
+end
+function display:enableScrollingMisses()
+	DEFAULT_CHAT_FRAME:AddMessage("Not Implemented")
+end
+
+
+
 	local function createNewFrame()
 		local f = CreateFrame("Frame", nil, UIParent)
 		f:SetSize(5, 5)
@@ -78,8 +112,9 @@ GameFontNormalMed1
 		f.Text = f:CreateFontString(nil, "OVERLAY")
 	
 		-- Set the font, size, and outline
-		f.Text:SetFont("Fonts\\FRIZQT__.TTF", 24, "OUTLINE")
-	
+		-- f.Text:SetFont("Fonts\\FRIZQT__.TTF", 24, "OUTLINE")
+		f.Text:SetFontObject(GameFontNormal)
+
 		-- Center the text within the frame
 		f.Text:SetPoint("CENTER")
 	
@@ -96,13 +131,13 @@ GameFontNormalMed1
 		f.IsCrit = false
 		f.Alpha = 1.0
 		f.TotalTicks = 0
-		f.TicksPerFrame = TICKS_PER_INTERVAL
+		f.TicksPerFrame = FRAME_TICKS_PER_INTERVAL
 		f.TicksRemaining = f.TicksPerFrame
-	
 		return f
 	end
 	local function releaseFrame(f) 
 		f.Text:SetText("")
+		f.IsCrit = false
 		f:Hide()
 		table.insert(framePool, f)
 	end
@@ -166,117 +201,6 @@ GameFontNormalMed1
 		end
 		return nil, nil, nil, nil
 	end
-	
-	-- local function scrollText(f, startX, xDelta, startY, yDelta)
-	-- 	local xPos = startX
-	-- 	local yPos = startY
-	
-	-- 	f:SetScript("OnUpdate", 
-	-- 	function(f)
-	-- 		f.TicksRemaining = f.TicksRemaining - 1
-	-- 		if f.TicksRemaining > 0 then
-	-- 			return
-	-- 		end
-	-- 		f.TicksRemaining = TICKS_PER_INTERVAL
-	-- 		f.TotalTicks = f.TotalTicks + 1
-	
-	-- 		if f.TotalTicks == 4 then -- update the position
-	-- 			xPos = xPos + xDelta
-	-- 			yPos = yPos + yDelta
-	
-	-- 		elseif f.TotalTicks == 12 then
-	-- 			xPos = xPos + xDelta
-	-- 			yPos = yPos + yDelta
-
-	-- 		elseif f.TotalTicks == 24 then
-	-- 			xPos = xPos + xDelta
-	-- 			yPos = yPos + yDelta
-
-	-- 		end	
-
-	-- 		if f.TotalTicks == 32 then
-	-- 			xPos = xPos + xDelta
-	-- 			yPos = yPos + yDelta
-
-	-- 			f:ClearAllPoints()
-	-- 			f:SetPoint("CENTER", xPos, yPos)
-	-- 			f:SetPoint("CENTER", xPos, yPos)
-	-- 		end
-
-	-- 		if f.TotalTicks > 30 then
-	-- 			f.TotalTicks = 0
-	-- 			f.Text:SetText("")
-	-- 			f:ClearAllPoints()
-	-- 			f:SetPoint("CENTER", 0, 0)
-	-- 			releaseFrame(f)
-	-- 		end
-	-- 	end)
-	-- end
-	-- local function scrollText(f, startX, xDelta, startY, yDelta)
-	-- 	local xPos = startX
-	-- 	local yPos = startY
-	
-	-- 	f:SetScript("OnUpdate", 
-	-- 	function(f, elapsed)
-	-- 		f.TicksRemaining = f.TicksRemaining - 1
-	-- 		if f.TicksRemaining > 0 then
-	-- 			return
-	-- 		end
-	-- 		f.TicksRemaining = TICKS_PER_INTERVAL
-	-- 		f.TotalTicks = f.TotalTicks + 1
-	
-	-- 		-- Update position continuously
-	-- 		xPos = xPos + xDelta
-	-- 		yPos = yPos + yDelta
-	
-	-- 		-- Move the text to the new position
-	-- 		f:ClearAllPoints()
-	-- 		f:SetPoint("CENTER", xPos, yPos)
-	
-	-- 		-- Check if the frame should be released
-	-- 		if f.TotalTicks > 30 then
-	-- 			f.TotalTicks = 0
-	-- 			f.Text:SetText("")
-	-- 			f:ClearAllPoints()
-	-- 			f:SetPoint("CENTER", 0, 0)
-	-- 			releaseFrame(f)
-	-- 		end
-	-- 	end)
-	-- end
-	-- local function scrollText(f, startX, xDelta, startY, yDelta)
-	-- 	local xPos = startX
-	-- 	local yPos = startY
-	
-	-- 	-- Speed of scrolling (you can adjust this value)
-	-- 	local scrollSpeed = 30  -- pixels per second
-	-- 	local curveIntensity = 0.02 -- Intensity of the curve
-	
-	-- 	f:SetScript("OnUpdate", 
-	-- 	function(f, elapsed)
-	-- 		-- Calculate the distance to move based on time elapsed
-	-- 		local distance = scrollSpeed * elapsed
-	
-	-- 		-- Update horizontal position
-	-- 		xPos = xPos + (xDelta * distance)
-	
-	-- 		-- Create a curved effect by adjusting the vertical position
-	-- 		yPos = startY + (curveIntensity * (xPos - startX)^2)
-	
-	-- 		-- Move the text to the new position
-	-- 		f:ClearAllPoints()
-	-- 		f:SetPoint("CENTER", xPos, yPos)
-	
-	-- 		-- Check if the text has scrolled off the screen or reached its final position
-	-- 		if math.abs(xPos) > GetScreenWidth() / 2 or math.abs(yPos) > GetScreenHeight() / 2 then
-	-- 			-- Reset and release the frame
-	-- 			f:SetScript("OnUpdate", nil)
-	-- 			f.Text:SetText("")
-	-- 			f:ClearAllPoints()
-	-- 			f:SetPoint("CENTER", 0, 0)
-	-- 			releaseFrame(f)
-	-- 		end
-	-- 	end)
-	-- end
 	local function scrollText(f, startX, xDelta, startY, yDelta)
 		local xPos = startX
 		local yPos = startY
@@ -286,7 +210,7 @@ GameFontNormalMed1
 		local curveIntensity = 0.02 -- Intensity of the curve
 	
 		-- Duration for the text to stay on screen (in seconds)
-		local duration = 3
+		local duration = 2
 	
 		-- Time passed since the text started scrolling
 		local timeElapsed = 0
@@ -325,26 +249,23 @@ GameFontNormalMed1
 	end
 	
 	function display:damageEntry( isCrit, dmgText)
-		if IN_COMBAT == false then 
-			return 
-		end
+		if IN_COMBAT == false then return end
+		if scrollingDmgDisabled then return end
 
 		local f = acquireFrame()
-		if f.IsCrit then
-			f.Text:SetFont("Fonts\\FRIZQT__.TTF", 48, "OUTLINE")
-
-			f.Text:SetText( dmgText )
-			-- yDelta = 6
-			-- xDelta = 6
-			-- xPos = xPos + 25
-		else
-			f.Text:SetText( dmgText )
-		end
-	
+		f.Text:SetText( dmgText )
+		f.IsCrit = isCrit
 		local startX, xDelta, startY, yDelta = getStartingPositions(DAMAGE_EVENT)
 		local xPos = startX
 		local yPos = startY
-	
+
+		f.Text:SetTextColor(1.0, 0.0, 0.0)
+		if isCrit then
+			f.Text:SetFont("Fonts\\FRIZQT__.TTF", 36, "OUTLINE")
+		else
+			f.Text:SetFont("Fonts\\FRIZQT__.TTF", 18, "OUTLINE")
+		end
+		f.Text:SetShadowOffset(1, -1)
 	
 		f:ClearAllPoints()
 		f:SetPoint("CENTER", xPos, yPos)
@@ -353,29 +274,53 @@ GameFontNormalMed1
 	end
 	
 	function display:healEntry(isCrit, healText)
-		if not IN_COMBAT then return end
+		if IN_COMBAT == false then return end
+		if scrollingHealsDisabled then return end
 
 		local f = acquireFrame()
-		f.Text:SetTextColor(0.0, 1.0, 0.0)
-		f.Text:SetText(healText)
+		f.Text:SetText( healText )
 		f.IsCrit = isCrit
-	
 		local startX, xDelta, startY, yDelta = getStartingPositions(HEALING_EVENT)
 		local xPos = startX
 		local yPos = startY
-	
-		f.Text:SetFontObject(GameFontNormal)
-		if f.IsCrit then
-			f.Text:SetFontObject(GameFontNormalHuge)
-			yDelta = 6
-			xDelta = -6
-			xPos = xPos + 25
+
+		f.Text:SetTextColor(0.0, 1.0, 0.0)
+		if isCrit then
+			f.Text:SetFont("Fonts\\FRIZQT__.TTF", 36, "OUTLINE")
+		else
+			f.Text:SetFont("Fonts\\FRIZQT__.TTF", 18, "OUTLINE")
 		end
+		f.Text:SetShadowOffset(1, -1)
 	
 		f:ClearAllPoints()
 		f:SetPoint("CENTER", xPos, yPos)
 	
 		scrollText(f, xPos, xDelta, yPos, yDelta)
+
+		-- if not IN_COMBAT then return end
+
+		-- local f = acquireFrame()
+		-- f.Text:SetTextColor(0.0, 1.0, 0.0)
+		-- f.Text:SetText(healText)
+		-- f.IsCrit = isCrit
+	
+		-- local startX, xDelta, startY, yDelta = getStartingPositions(HEALING_EVENT)
+		-- local xPos = startX
+		-- local yPos = startY
+	
+		-- f.Text:SetFontObject(GameFontNormal)
+		-- if f.IsCrit then
+		-- 	f.Text:SetFontObject(GameFontNormalHuge)
+		-- 	yDelta = 6
+		-- 	xDelta = -6
+		-- 	xPos = xPos + 25
+		-- end
+		-- f.Text:SetShadowOffset(1, -1)
+
+		-- f:ClearAllPoints()
+		-- f:SetPoint("CENTER", xPos, yPos)
+	
+		-- scrollText(f, xPos, xDelta, yPos, yDelta)
 	end
 	
 	function display:auraEntry(auraText)
@@ -414,7 +359,6 @@ GameFontNormalMed1
 	function display:setCombatFlag( value )
 		IN_COMBAT = value
 	end
-	
 	
 initFramePool()
 
