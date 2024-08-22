@@ -32,9 +32,9 @@ local MetricsDB = LibStub("LibDataBroker-1.1"):NewDataObject(ADDON_NAME,
 		OnTooltipShow = function( tooltip )
 			tooltip:AddLine(L["ADDON_AND_VERSION"])
 			tooltip:AddLine(L["Left click to toggle options menu."])
-			tooltip:AddLine(L["Right click to show encounter report(s)."])
-			tooltip:AddLine(L["Shift right click to clear encounter text."])
-			tooltip:AddLine(L["Shift left click - NOT IMPLENTED"])
+			-- tooltip:AddLine(L["Right click to show encounter report(s)."])
+			-- tooltip:AddLine(L["Shift right click to clear encounter text."])
+			-- tooltip:AddLine(L["Shift left click - NOT IMPLENTED"])
 		end, 
 		OnClick = function(self, button )
 			-- LEFT CLICK - Display the options menu
