@@ -42,7 +42,6 @@ end
 
 function core:getExpansionName( )
     local expansionLevel = GetExpansionLevel()
-    print( expansionLevel )
     local expansionNames = { -- Use a table to map expansion levels to names
         [LE_EXPANSION_DRAGONFLIGHT] = "Dragon Flight",
         [LE_EXPANSION_SHADOWLANDS] = "Shadowlands",
