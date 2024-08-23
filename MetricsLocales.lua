@@ -25,7 +25,6 @@ local PATCH = C_AddOns.GetAddOnMetadata(ADDON_NAME, "X-PATCH")
 local version = string.format("%s.%s.%s", MAJOR, MINOR, PATCH )
 
 local expansionName = core:getExpansionName()
-
 local L = setmetatable({}, { __index = function(t, k) 
     local v = tostring(k)
     rawset(t, k, v)

@@ -42,6 +42,7 @@ end
 
 function core:getExpansionName( )
     local expansionLevel = GetExpansionLevel()
+    print( expansionLevel )
     local expansionNames = { -- Use a table to map expansion levels to names
         [LE_EXPANSION_DRAGONFLIGHT] = "Dragon Flight",
         [LE_EXPANSION_SHADOWLANDS] = "Shadowlands",
@@ -51,7 +52,8 @@ function core:getExpansionName( )
 
         [LE_EXPANSION_MISTS_OF_PANDARIA] = "Classic (Mists of Pandaria",
         [LE_EXPANSION_LEGION] = "Classic (Legion)",
-        [LE_EXPANSION_BATTLE_FOR_AZEROTH] = "Classic (Battle for Azeroth)"
+        [LE_EXPANSION_BATTLE_FOR_AZEROTH] = "Classic (Battle for Azeroth)",
+        [LE_EXPANSION_WAR_WITHIN]   = "Retail (The War Within)"
     }
     return expansionNames[expansionLevel] -- Directly return the mapped name
 end
